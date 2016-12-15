@@ -428,6 +428,21 @@ static TDPTag const TDPTagQuit = @"quit";
  */
 - (BOOL)isAdNetworkSetup:(TDMNetwork)adNetwork;
 
+/**
+ This method is only used by the debugger to query if the launch request completed.
+ */
+- (bool)launchRequestCompleted;
+
+/**
+ This method is only used by the debugger to query if the app has a specific network enabled.
+ */
+- (bool)usingNetwork:(TDMNetwork)network;
+
+/**
+ This method is only used by the debugger to query if the app is using adapter or SDK for a specific network.
+ */
+- (bool)usingOfficialAdapter:(TDMNetwork)network;
+
 @end
 
 
@@ -473,6 +488,12 @@ static TDPTag const TDPTagQuit = @"quit";
 - (void)didFailToDisplayBanner;
 
 /**
+ Called when, for whatever reason, the banner was not able to be displayed for a specific network.
+ This method is only used in conjunction with -showMediatedBanner.
+ */
+- (void)didFailToDisplayBannerForNetwork:(TDMNetwork)network;
+
+/**
  Called when the user clicks the banner.
  This method is only used in conjunction with -showMediatedBanner.
  */
@@ -500,6 +521,21 @@ static TDPTag const TDPTagQuit = @"quit";
 - (void)didLoadInterstitialForPlacementTag:(NSString *)tag;
 
 /**
+ Called each time an interstitial is ready to be displayed.
+ By default this method may be called multiple times on application launch, for each supported orientation.
+ 
+ @param orientation The orientation of the interstitial that is ready to be displayed.
+ */
+- (void)didLoadInterstitialForOrientation:(TDOrientation)orientation;
+
+/**
+ Called each time an interstitial is ready to be displayed for a particular placement tag.
+ @param tag The placement tag of the interstitial that is ready to be displayed.
+ @param orientation The orientation of the interstitial that is ready to be displayed.
+ */
+- (void)didLoadInterstitialForPlacementTag:(NSString *)tag orientation:(TDOrientation)orientation;
+
+/**
  Called immediately before the interstitial is to be displayed to the user.
  This method is only used in conjunction with -showInterstitial.
  */
@@ -516,6 +552,12 @@ static TDPTag const TDPTagQuit = @"quit";
  This method is only used in conjunction with -showInterstitial.
  */
 - (void)didFailToDisplayInterstitial;
+
+/**
+ Called when, for whatever reason, the interstitial was not able to be displayed for a specific network.
+ This method is only used in conjunction with -showInterstitial.
+ */
+- (void)didFailToDisplayInterstitialForNetwork:(TDMNetwork)network;
 
 /**
  Called when the interstitial was not able to be displayed for a specific placement tag.
@@ -552,21 +594,6 @@ static TDPTag const TDPTagQuit = @"quit";
  */
 - (void)hasNoInterstitialsAvailable;
 
-/**
- Called each time an interstitial is ready to be displayed. 
- By default this method may be called multiple times on application launch, for each supported orientation.
- 
- @param orientation The orientation of the interstitial that is ready to be displayed.
- */
-- (void)hasInterstitialsAvailableForOrientation:(TDOrientation)orientation;
-
-/**
- Called each time an interstitial is ready to be displayed for a particular placement tag.
- @param tag The placement tag of the interstitial that is ready to be displayed.
- @param orientation The orientation of the interstitial that is ready to be displayed.
- */
-- (void)hasInterstitialsAvailableForPlacementTag:(NSString *)tag orientation:(TDOrientation)orientation;
-
 #pragma mark Video delegate methods
 
 /**
@@ -599,6 +626,12 @@ static TDPTag const TDPTagQuit = @"quit";
  This method is only used in conjunction with -showVideo.
  */
 - (void)didFailToDisplayVideo;
+
+/**
+ Called when, for whatever reason, the video was not able to be displayed for a specific network.
+ This method is only used in conjunction with -showInterstitial.
+ */
+- (void)didFailToDisplayVideoForNetwork:(TDMNetwork)network;
 
 /**
  Called when the user closes video.
@@ -798,5 +831,9 @@ static TDPTag const TDPTagQuit = @"quit";
 - (void)didFailToShowInterstitial __deprecated_msg("Use didFailToDisplayInterstitial");
 
 - (void)didFailToLoadNativeAdverts __deprecated_msg("Use didFailtoFetchNativeAdvertsFromServer");
+
+- (void)hasInterstitialsAvailableForOrientation:(TDOrientation)orientation __deprecated_msg("Use didLoadInterstitialForOrientation");
+
+- (void)hasInterstitialsAvailableForPlacementTag:(NSString *)tag orientation:(TDOrientation)orientation __deprecated_msg("Use didLoadInterstitialForPlacementTag:orientation");;
 
 @end

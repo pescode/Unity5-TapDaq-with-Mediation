@@ -27,5 +27,29 @@ public class TestButtons : MonoBehaviour {
 	{
 		RshkAds.ShowRewarded ();
 	}
+
+	public void ClickLoadInterstitial()
+	{
 		
+	}
+
+	public void ClickLoadRewarded()
+	{
+
+	}
+
+	public void ClickHideBanner()
+	{
+		RshkAds.HideBanner ();
+	}
+
+	public void ClickShowBanner()
+	{
+		RshkAds.ShowBanner ();
+	}
+
+	void Update()
+	{
+
+	}
 }

@@ -9,10 +9,11 @@ Show TapDaq ads with mediation (interstitial &amp; rewarded &amp; banner) from d
 
 ### HOW TO USE ###
 * The project contains the adaptors, sdk, manifest and xcode setup ready to use TapDaq with AdColony, AppLovin, Chartboost, Facebook Audience Network, UnityADS and Vungle. You can write/use your own code to display ads or you can optionally use RshkAds.cs .
+* Download and import the unity package here https://goo.gl/3zmLef
 
 ### Plugins ###
 
-* TapDaq (Unity) v2.6.1
+* TapDaq (Unity) v2.8.1
 
 ### ABOUT ###
 Used by Roshka Studios http://roshkastudios.com

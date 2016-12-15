@@ -48,6 +48,7 @@ public class PostBuildProcessor : MonoBehaviour
 	    proj.ReadFromString(File.ReadAllText(projPath));
 
 	    string target = proj.TargetGuidByName("Unity-iPhone");
+		proj.SetBuildProperty(target, "ENABLE_BITCODE", "NO");
 		proj.AddBuildProperty(target, "OTHER_LDFLAGS", "-ObjC");
 		proj.AddBuildProperty(target, "OTHER_LDFLAGS", "-fobjc-arc");
 	    

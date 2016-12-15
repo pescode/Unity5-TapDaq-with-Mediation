@@ -24,13 +24,13 @@ public class RshkAds : MonoBehaviour {
 
 	static RshkAds instance;
 
-	static int InterstitialMinNextAdShow = 2;
-	static int InterstitialMaxNextAdShow = 6;
+	static int InterstitialMinNextAdShow = 0;
+	static int InterstitialMaxNextAdShow = 2;
 	static int InterstitialNextAdShow = 0;
 	static int InterstitialAdCount = 0;
 
-	static int VideoMinNextAdShow = 2;
-	static int VideoMaxNextAdShow = 4;
+	static int VideoMinNextAdShow = 0;
+	static int VideoMaxNextAdShow = 2;
 	static int VideoNextAdShow = 0;
 	static int VideoAdCount = 0;
 
@@ -56,30 +56,24 @@ public class RshkAds : MonoBehaviour {
 			DontDestroyOnLoad (gameObject);
 			InterstitialAdCount = PlayerPrefs.GetInt ("InterstitialAdCount", InterstitialAdCount);
 			InterstitialNextAdShow = PlayerPrefs.GetInt ("InterstitialNextAdShow", InterstitialNextAdShow);
+			VideoAdCount = PlayerPrefs.GetInt ("VideoAdCount", VideoAdCount);
+			VideoNextAdShow = PlayerPrefs.GetInt ("VideoNextAdShow", VideoNextAdShow);
+
+			SetupListeners ();
 
 			AdManager.Init();
 
 		}
 	}
 
-	// Subscribe to Tapdaq events
-	private void OnEnable () {
+	static void SetupListeners()
+	{
 		TDCallbacks.AdAvailable += OnAdAvailable;
 		TDCallbacks.AdStarted += OnAdStarted;
 		TDCallbacks.AdFinished += OnAdFinished;
 		TDCallbacks.AdClicked += OnAdClicked;
 		TDCallbacks.AdNotAvailable += OnAdNotAvailable;
 		TDCallbacks.AdError += OnAdError;
-	}
-
-	// Unsubscribe from Tapdaq events
-	private void OnDisable () {
-		TDCallbacks.AdAvailable -= OnAdAvailable;
-		TDCallbacks.AdStarted -= OnAdStarted;
-		TDCallbacks.AdFinished -= OnAdFinished;
-		TDCallbacks.AdClicked -= OnAdClicked;
-		TDCallbacks.AdNotAvailable -= OnAdNotAvailable;
-		TDCallbacks.AdError -= OnAdError;
 	}
 
 	public static void ShowInterstitial(string tag = "interstitial")
@@ -93,6 +87,7 @@ public class RshkAds : MonoBehaviour {
 					if (!HasWatchedRewardedAds) {
 						InterstitialAdCount = 0;
 						InterstitialNextAdShow = UnityEngine.Random.Range (InterstitialMinNextAdShow, InterstitialMaxNextAdShow);
+						VideoAdCount = 0;
 						PlayerPrefs.SetInt ("InterstitialNextAdShow", InterstitialNextAdShow);
 						AdManager.ShowInterstitial (tag);
 						Analytics.CustomEvent ("ADS Interstitial", new Dictionary<string, object> {
@@ -104,20 +99,17 @@ public class RshkAds : MonoBehaviour {
 		//}
 	}
 
-	public static void ShowRewarded(bool TestMode = false, string tag = "rewarded")
+	public static void ShowRewarded(string tag = "rewarded")
 	{
 		Debug.Log ("**********************\n**********************\nSHOW REWARDED! \n ");
-		if (!TestMode) {
-			Analytics.CustomEvent("ADS Rewarded", new Dictionary<string, object>
-				{
-					{ "Tag", tag }
-				});
-			HasWatchedRewardedAds = true;
-			InterstitialAdCount = 0;
-			AdManager.ShowRewardVideo(tag);
-		} else {
-			OnRewardedCompleted();
-		}
+		Analytics.CustomEvent("ADS Rewarded", new Dictionary<string, object>
+			{
+				{ "Tag", tag }
+			});
+		HasWatchedRewardedAds = true;
+		InterstitialAdCount = 0;
+		VideoAdCount = 0;
+		AdManager.ShowRewardVideo(tag);
 	}
 
 	public static void ShowVideo(string tag = "video")
@@ -129,6 +121,7 @@ public class RshkAds : MonoBehaviour {
 			PlayerPrefs.SetInt ("VideoAdCount", VideoAdCount);
 			if (isVideoLoaded) {
 				if (VideoAdCount >= VideoNextAdShow) {
+					InterstitialAdCount = 0;
 					VideoAdCount = 0;
 					VideoNextAdShow = UnityEngine.Random.Range (VideoMinNextAdShow, VideoMaxNextAdShow);
 					PlayerPrefs.SetInt ("VideoNextAdShow", VideoNextAdShow);
@@ -159,6 +152,11 @@ public class RshkAds : MonoBehaviour {
 			isBannerShowing = false;
 		}
 	}
+
+	public static void DestroyBanner()
+	{
+
+	}
 		
 	public static bool IsRewardedAdsAvailable()
 	{
@@ -168,6 +166,7 @@ public class RshkAds : MonoBehaviour {
 	static IEnumerator InterstitialDone()
 	{
 		yield return new WaitForSeconds (1f);
+		Debug.Log ("-- INTERSTITIAL COMPLETED --");
 		AudioListener.pause = false;
 		Time.timeScale = 1;			//optional to continue the game
 	}
@@ -176,6 +175,7 @@ public class RshkAds : MonoBehaviour {
 	static IEnumerator RewardedDone()
 	{
 		yield return new WaitForSeconds (1f);
+		Debug.Log ("-- REWARDED COMPLETED --");
 		AudioListener.pause = false;
 		OnRewardedCompleted();
 	}
@@ -183,7 +183,7 @@ public class RshkAds : MonoBehaviour {
 	//
 	// Callback Methods
 	//
-	private void OnAdAvailable (TDAdEvent e) {
+	static void OnAdAvailable (TDAdEvent e) {
 		if (e.adType == "INTERSTITIAL") {
 			Debug.Log ("-- Test Log -- Interstitial is available.");
 			isInterstitialLoaded = true;
@@ -203,16 +203,16 @@ public class RshkAds : MonoBehaviour {
 		}
 	}
 
-	private void OnAdStarted (TDAdEvent e) {
-		Debug.Log ("-- Test Log -- " + e.adType + ": " + e.message);
+	static void OnAdStarted (TDAdEvent e) {
+		Debug.Log ("-- Test Log OnAdStarted -- " + e.adType + ": " + e.message);
 		if (e.adType != "BANNER") {
 			AudioListener.pause = true;
 			Time.timeScale = 0.02f;		//	optional to pause the game
 		}
 	}
 
-	private void OnAdFinished (TDAdEvent e) {
-		Debug.Log ("-- Test Log -- " + e.adType + ": " + e.message);
+	static void OnAdFinished (TDAdEvent e) {
+		Debug.Log ("-- Test Log OnAdFinished -- " + e.adType + ": " + e.message);
 		if (e.adType == "INTERSTITIAL") {
 			instance.StartCoroutine (InterstitialDone ());
 		} else if (e.adType == "VIDEO") {
@@ -223,8 +223,8 @@ public class RshkAds : MonoBehaviour {
 
 	}
 
-	private void OnAdClicked (TDAdEvent e) {
-		Debug.Log ("-- Test Log -- " + e.adType + ": " + e.message);
+	static void OnAdClicked (TDAdEvent e) {
+		Debug.Log ("-- Test Log OnAdClicked -- " + e.adType + ": " + e.message);
 		Analytics.CustomEvent("ADS Clicked", new Dictionary<string, object>
 			{
 				{ "Type", e.adType },
@@ -233,8 +233,8 @@ public class RshkAds : MonoBehaviour {
 	}
 
 
-	private void OnAdNotAvailable (TDAdType adType) {
-		Debug.Log ("-- Test Log -- " + adType + " is not available.");
+	static void OnAdNotAvailable (TDAdType adType) {
+		Debug.Log ("-- Test Log OnAdNotAvailable -- " + adType + " is not available.");
 		if (adType.ToString() == "INTERSTITIAL") {
 			isInterstitialLoaded = false;
 		}else if (adType.ToString() == "VIDEO") {
@@ -244,7 +244,7 @@ public class RshkAds : MonoBehaviour {
 		}
 	}
 
-	private void OnAdError (TDAdEvent e) {
+	static void OnAdError (TDAdEvent e) {
 		Debug.Log ("-- Test Log -- " + e.adType + ": " + e.message);
 	}
 		
